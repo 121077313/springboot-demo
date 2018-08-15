@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+
+
+
+
+	<bean id="memCachedPool" class="com.whalin.MemCached.SockIOPool"
+		factory-method="getInstance" init-method="initialize" destroy-method="shutDown">
+		<constructor-arg>
+			<value>memcachePool</value>
+		</constructor-arg>
+		<property name="servers">
+			<list>
+				<value>localhost:11211</value>
+				<value>localhost:11211</value>
+			</list>
+		</property>
+		<property name="weights">
+			<list>
+				<value>5</value>
+				<value>5</value>
+			</list>
+		</property>
+
+
+		<property name="maxConn">
+			<value>32</value>
+		</property>
+
+
+		<property name="nagle">
+			<value>false</value>
+		</property>
+
+		<property name="socketTO">
+			<value>3000</value>
+		</property>
+	</bean>
+
+	<bean id="memCachedClient" class="com.whalin.MemCached.MemCachedClient"
+		depends-on="memCachedPool">
+		<constructor-arg index="0">
+			<value>memcachePool</value>
+		</constructor-arg>
+		<constructor-arg index="1">
+			<value>false</value>
+		</constructor-arg>
+	</bean>
+
+
+
+</beans>

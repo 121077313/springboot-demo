@@ -1,0 +1,7 @@
+@echo off
+
+java -javaagent:libs/springloaded-1.2.5.RELEASE.jar -noverify -Dspringloaded=verbose;explain;watchJars=libs/dog-server-1.0.jar -jar libs/dog-server-1.0.jar
+
+
+
+pause
