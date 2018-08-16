@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+            http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+            ">
+	<import resource="spring-memcached.xml" />
+
+	<cache:annotation-driven cache-manager="cacheManager"   />
+
+
+	<bean id="methodCacheAspectJ" class="org.freyja.cache.aspectj.FreyjaCacheAspectJ">
+		<property name="cacheManager">
+			<ref local="cacheManager" />
+		</property>
+	</bean>
+
+	<bean id="localMethodCacheAspectJ" class="org.freyja.cache.local.aspectj.FreyjaLocalCacheAspectJ">
+		<property name="cacheManager">
+			<ref local="localCacheManager" />
+		</property>
+	</bean>
+
+	<aop:config proxy-target-class="true">
+		<aop:aspect ref="methodCacheAspectJ">
+			<aop:around method="around" pointcut="execution(* com.intion.app.dao.*.*(..))" />
+		</aop:aspect>
+
+		<aop:aspect ref="localMethodCacheAspectJ">
+			<aop:around method="around" pointcut="execution(* com.intion.app.dao.*.*(..))" />
+		</aop:aspect>
+	</aop:config>
+
+
+	<!-- spring自己的换管理器，这里定义了两个缓存位置名称 ，既注解中的value -->
+	<bean id="cacheManager" class="org.freyja.cache.memcached.MemcachedCacheManager"
+		p:store-ref="memCachedClient">
+		<property name="expiry">
+			<value>2592000000</value>
+		</property>
+	</bean>
+
+	<!-- spring自己的换管理器，这里定义了两个缓存位置名称 ，既注解中的value -->
+	<bean id="localCacheManager"
+		class="org.springframework.cache.concurrent.ConcurrentMapCacheManager">
+	</bean>
+</beans>
