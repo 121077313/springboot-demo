@@ -19,7 +19,7 @@ public class UserController {
 
 	@RequestMapping("/get")
 	@ResponseBody
-	public String user(int id) {
+	public String get(int id) {
 		User user = userService.getUser(id);
 		if (user == null) {
 			return id + " user 不存在";
