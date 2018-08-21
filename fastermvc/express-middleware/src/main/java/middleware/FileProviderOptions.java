@@ -7,7 +7,7 @@ public class FileProviderOptions {
 
 
 	private String[] extensions;
-	private HttpRequestHandler handler;
+	public HttpRequestHandler handler;
 	private boolean fallBackSearching;
 	private boolean lastModified;
 	private long maxAge;

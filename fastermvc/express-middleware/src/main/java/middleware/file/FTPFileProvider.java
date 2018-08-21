@@ -1,39 +1,27 @@
-package middleware;
+package middleware.file;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Date;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-
 import express.http.Middleware;
 import express.http.Request;
 import express.http.Response;
-import express.utils.MediaType;
 import express.utils.Status;
 import express.utils.Utils;
+import middleware.FileProvider;
+import middleware.FileProviderOptions;
 
 /**
  * @author Simon Reinisch An middleware to provide access to static
  *         server-files.
  */
-public  class FileProvider extends Middleware {
-
-	public enum DotFiles {
-
-		IGNORE, DENY, ALLOW
-
-	}
-
+public class FTPFileProvider extends FileProvider {
 	private final Logger logger;
 	private FileProviderOptions options;
 	private String root;
@@ -42,41 +30,38 @@ public  class FileProvider extends Middleware {
 		this.logger = Logger.getLogger(this.getClass().getSimpleName());
 		this.logger.setUseParentHandlers(false); // Disable default console log
 	}
-
-	public FileProvider(String root) {
+	
+	public FTPFileProvider(String root) {
 
 		this(root, new FileProviderOptions());
 	}
 
-	public FileProvider(String root, FileProviderOptions options) {
+	public FTPFileProvider(String root, FileProviderOptions options) {
 		Path rootDir = Paths.get(root);
-//		Resource res = new ClassPathResource(root);
-
-//		URL url = FileProvider.class.getClassLoader().getSystemResource(root);
-
-//		Path rootDir = null;
 		try {
-//			rootDir = Paths.get(res.getURI());
-			if (!Files.exists(rootDir) || !Files.isDirectory(rootDir)) {
-
+			if (!Files.exists(rootDir) || !Files.isDirectory(rootDir))
 				throw new IOException(rootDir + " does not exists or isn't an directory.");
-
-			}
-
-//			if (!res.exists()) {
-//				throw new IOException(rootDir + " does not exists or isn't an directory.");
-//
-//			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		this.root = rootDir.toAbsolutePath().toString();
-		this.root = root;
+
+		this.root = rootDir.toAbsolutePath().toString();
 		this.options = options;
 	}
 
 	@Override
 	public boolean before(Request req, Response res) {
+		handle(req, res);
+		return super.before(req, res);
+	}
+
+	@Override
+	public boolean after(Request req, Response res) {
+		return super.after(req, res);
+	}
+
+	@Override
+	public void handle(Request req, Response res) {
 		String path = req.getURI().getPath();
 
 		// Check context
@@ -86,22 +71,11 @@ public  class FileProvider extends Middleware {
 		}
 
 		// If the path is empty try index.html
-//		if (path.length() <= 1)
-//			path = "index.html";
+		if (path.length() <= 1)
+			path = "index.html";
 
-		Resource resource = new ClassPathResource(root + "" + path);
+		Path reqFile = Paths.get(root + "\\" + path);
 
-//		Path reqFile = Paths.get(root + "\\" + path);
-		Path reqFile = null;
-		try {
-
-			URL url = FileProvider.class.getClassLoader().getResource("/" + root + "" + path);
-
-			reqFile = Paths.get(url.toURI());
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 		/*
 		 * If the file wasn't found, it will search in the target-directory for the file
 		 * by the raw-name without extension.
@@ -132,10 +106,10 @@ public  class FileProvider extends Middleware {
 				switch (options.getDotFiles()) {
 				case IGNORE:
 					res.setStatus(Status._404);
-					return false;
+					return;
 				case DENY:
 					res.setStatus(Status._403);
-					return false;
+					return;
 				}
 			}
 
@@ -143,7 +117,7 @@ public  class FileProvider extends Middleware {
 				String reqEx = Utils.getExtension(reqFile);
 
 				if (reqEx == null)
-					return false;
+					return;
 
 				for (String ex : options.getExtensions()) {
 					if (reqEx.equals(ex)) {
@@ -157,12 +131,11 @@ public  class FileProvider extends Middleware {
 				finish(reqFile, req, res);
 			}
 		}
-		return false;
 	}
 
 	private void finish(Path file, Request req, Response res) {
-		if (options.getHandler() != null)
-			options.getHandler().handle(req, res);
+		if (options.handler != null)
+			options.handler.handle(req, res);
 
 		try {
 
@@ -177,59 +150,6 @@ public  class FileProvider extends Middleware {
 
 		res.setHeader("Cache-Control", String.valueOf(options.getMaxAge()));
 		send(res, file);
-	}
-
-	public boolean send(Response res, Path file) {
-		if (res.isClosed() || !Files.isRegularFile(file))
-			return false;
-
-		try {
-			res.contentLength = Files.size(file);
-
-			// Detect content type
-			MediaType mediaType = Utils.getContentType(file);
-			res.contentType = mediaType == null ? null : mediaType.getMIME();
-
-			// Send header
-			res.sendHeaders();
-
-			// Send file
-			InputStream fis = Files.newInputStream(file, StandardOpenOption.READ);
-			byte[] buffer = new byte[1024];
-			int n;
-			while ((n = fis.read(buffer)) != -1) {
-				res.body.write(buffer, 0, n);
-			}
-
-			fis.close();
-
-		} catch (IOException e) {
-			logger.log(Level.INFO, "Failed to pipe file to outputstream.", e);
-			res.close();
-			return false;
-		}
-
-		res.close();
-		return true;
-	}
-
-	/**
-	 * Sets the 'Content-Disposition' header to 'attachment' and his
-	 * Content-Disposition "filename=" parameter to the file name. Normally this
-	 * triggers an download event client-side.
-	 *
-	 * @param file The file which will be send as attachment.
-	 * @return True if the file was successfully send, false if the file doesn't
-	 *         exists or the respose is already closed.
-	 */
-	public boolean sendAttachment(Response res, Path file) {
-		if (res.isClosed() || !Files.isRegularFile(file))
-			return false;
-
-		String dispo = "attachment; filename=\"" + file.getFileName() + "\"";
-		res.setHeader("Content-Disposition", dispo);
-
-		return send(res, file);
 	}
 
 	private String getBaseName(Path path) {
@@ -250,7 +170,6 @@ public  class FileProvider extends Middleware {
 
 	@Override
 	public String getName() {
-		return "file";
+		return null;
 	}
-
 }

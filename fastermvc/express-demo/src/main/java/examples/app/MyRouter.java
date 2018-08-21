@@ -9,7 +9,9 @@ import express.Express;
 import middleware.Cookie;
 import middleware.CookieSession;
 import middleware.FileProvider;
+import middleware.FileProviderOptions;
 import middleware.SessionCookie;
+import middleware.file.FTPFileProvider;
 
 @Component
 public class MyRouter {
@@ -89,14 +91,10 @@ public class MyRouter {
 				})
 
 //				.use(Middleware.cookieSession("f3v4", 9000))
-				.use(new CookieSession("f3v4", 9000))//使用coki中间件
-				
-				.use("/static",new FileProvider("public"))
-				
-				
-				
-				
-				
+				.use(new CookieSession("f3v4", 9000))// 使用coki中间件
+
+				.use("/static", new FTPFileProvider("F:\\test", new FileProviderOptions()))
+
 				.get("/session", (req, res) -> {
 
 					/*
