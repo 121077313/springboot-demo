@@ -42,7 +42,9 @@ public  class FileProvider extends Middleware {
 		this.logger = Logger.getLogger(this.getClass().getSimpleName());
 		this.logger.setUseParentHandlers(false); // Disable default console log
 	}
-
+	public FileProvider() {
+		
+	}
 	public FileProvider(String root) {
 
 		this(root, new FileProviderOptions());

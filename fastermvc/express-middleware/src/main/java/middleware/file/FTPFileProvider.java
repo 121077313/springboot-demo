@@ -52,7 +52,7 @@ public class FTPFileProvider extends FileProvider {
 	@Override
 	public boolean before(Request req, Response res) {
 		handle(req, res);
-		return super.before(req, res);
+		return true;
 	}
 
 	@Override
