@@ -103,6 +103,24 @@ public class DefaultHandler {
 		}
 		handler.handle(req, res);
 	}
+	
+	
+	
+
+	private HashMap<String, String> matchURL(String filter, String url) {
+		HashMap<String, String> params = new HashMap<>();
+
+		if (url.equals(filter)) {
+			return params;
+		}
+		
+		if (url.startsWith(filter)) {
+			return params;
+		}
+		
+
+		return null;
+	}
 
 	private HashMap<String, String> matchURL2(String filter, String url) {
 		HashMap<String, String> params = new HashMap<>();
@@ -118,7 +136,7 @@ public class DefaultHandler {
 	/**
 	 * Extract and match the parameter from the url with an filter.
 	 */
-	private HashMap<String, String> matchURL(String filter, String url) {
+	private HashMap<String, String> matchURL3(String filter, String url) {
 		HashMap<String, String> params = new HashMap<>();
 		StringBuilder key = new StringBuilder();
 		StringBuilder val = new StringBuilder();
