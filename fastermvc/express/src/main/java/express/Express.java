@@ -173,10 +173,12 @@ public class Express implements Router {
 	 */
 	public Express use(String root, Router router) {
 
-		router.getHandler().forEach(fl -> fl.filters.forEach(layer -> {
-			((DefaultHandler) layer).setRoot(root);
-		}));
+//		router.getHandler().forEach(fl -> fl.filters.forEach(layer -> {
+//			((DefaultHandler) layer).setRoot(root);
+//		}));
 
+		router.getHandler().setRoot(root);
+		
 		this.layers.combine(router.getHandler());
 		// this.worker.addAll(router.getWorker());
 
