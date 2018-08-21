@@ -18,7 +18,7 @@ import express.http.Middleware;
 /**
  * @author Simon Reinisch Core class of java-express
  */
-public class Express implements Router {
+public class Express {
 
 	public ConcurrentHashMap<String, HttpRequestHandler> parameterListener;
 	public ConcurrentHashMap<Object, Object> locals;
@@ -37,7 +37,7 @@ public class Express implements Router {
 		locals = new ConcurrentHashMap<>();
 
 		// worker = new ArrayList<>();
-		layers = new HandlerLayers(2);
+		layers = new HandlerLayers();
 
 		executor = Executors.newCachedThreadPool();
 	}
@@ -157,8 +157,8 @@ public class Express implements Router {
 	 * @param router
 	 *            The router.
 	 */
-	public Express use(Router router) {
-		this.layers.combine(router.getHandler());
+	public Express use(Express router) {
+		this.layers.combine(router.layers);
 		// this.worker.addAll(router.getWorker());
 		return this;
 	}
@@ -171,15 +171,15 @@ public class Express implements Router {
 	 * @param router
 	 *            The router.
 	 */
-	public Express use(String root, Router router) {
+	public Express use(String root, Express router) {
 
-//		router.getHandler().forEach(fl -> fl.filters.forEach(layer -> {
-//			((DefaultHandler) layer).setRoot(root);
-//		}));
+		// router.getHandler().forEach(fl -> fl.filters.forEach(layer -> {
+		// ((DefaultHandler) layer).setRoot(root);
+		// }));
 
-		router.getHandler().setRoot(root);
-		
-		this.layers.combine(router.getHandler());
+		router.layers.setRoot(root);
+
+		this.layers.combine(router.layers);
 		// this.worker.addAll(router.getWorker());
 
 		return this;
@@ -328,11 +328,6 @@ public class Express implements Router {
 			// Stop worker threads
 			// worker.forEach(FilterWorker::stop);
 		}
-	}
-
-	@Override
-	public HandlerLayers getHandler() {
-		return layers;
 	}
 
 }

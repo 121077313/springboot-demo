@@ -28,7 +28,7 @@ public class HandlerLayers {
 	
 	
 
-	public HandlerLayers(int layers) {
+	public HandlerLayers() {
 
 		// Create & initialize layers
 //		this.layers = new HandlerLayer[layers];
