@@ -1,7 +1,6 @@
 package examples;
 
 import express.Express;
-import express.ExpressRouter;
 
 public class Routing {
 
@@ -9,13 +8,21 @@ public class Routing {
     Express app = new Express();
 
     // Define router for index sites
-    ExpressRouter indexRouter = new ExpressRouter();
+    Express indexRouter = new Express();
     indexRouter.get("/", (req, res) -> res.send("Hello World!"));
     indexRouter.get("/index", (req, res) -> res.send("Index"));
     indexRouter.get("/about", (req, res) -> res.send("About"));
 
+    
+    
+    Express index=new Express();
+    
+    index.get("/", (req, res) -> res.send("Hello World!"));
+    
+    
+    
     // Define router for user pages
-    ExpressRouter userRouter = new ExpressRouter();
+    Express userRouter = new Express();
     userRouter.get("/", (req, res) -> res.send("User Page"));
     userRouter.get("/login", (req, res) -> res.send("User Login"));
     userRouter.get("/register", (req, res) -> res.send("User Register"));
@@ -23,6 +30,8 @@ public class Routing {
 
     // Add router and set root pathsl
     app.use("/", indexRouter);
+    
+    app.use("/test", index);
     app.use("/user", userRouter);
 
     // Start server

@@ -24,7 +24,7 @@ public class CookieSession extends Middleware implements FilterTask {
 	}
 
 	@Override
-	public boolean before(Request req, Response res) {
+	public void before(Request req, Response res) {
 //		Cookie cookie = req.getCookie(cookieName);
 		Cookie cookie = null;
 		if (cookie != null && cookies.containsKey(cookie.getValue())) {
@@ -44,7 +44,6 @@ public class CookieSession extends Middleware implements FilterTask {
 
 			req.addMiddlewareContent(this, sessionCookie);
 		}
-		return true;
 	}
 
 	@Override

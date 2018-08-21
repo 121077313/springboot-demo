@@ -30,7 +30,7 @@ public class FTPFileProvider extends FileProvider {
 		this.logger = Logger.getLogger(this.getClass().getSimpleName());
 		this.logger.setUseParentHandlers(false); // Disable default console log
 	}
-	
+
 	public FTPFileProvider(String root) {
 
 		this(root, new FileProviderOptions());
@@ -40,7 +40,8 @@ public class FTPFileProvider extends FileProvider {
 		Path rootDir = Paths.get(root);
 		try {
 			if (!Files.exists(rootDir) || !Files.isDirectory(rootDir))
-				throw new IOException(rootDir + " does not exists or isn't an directory.");
+				throw new IOException(rootDir
+						+ " does not exists or isn't an directory.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -50,18 +51,12 @@ public class FTPFileProvider extends FileProvider {
 	}
 
 	@Override
-	public boolean before(Request req, Response res) {
-		handle(req, res);
-		return true;
+	public void after(Request req, Response res) {
+		super.after(req, res);
 	}
 
 	@Override
-	public boolean after(Request req, Response res) {
-		return super.after(req, res);
-	}
-
-	@Override
-	public void handle(Request req, Response res) {
+	public void before(Request req, Response res) {
 		String path = req.getURI().getPath();
 
 		// Check context
@@ -77,10 +72,11 @@ public class FTPFileProvider extends FileProvider {
 		Path reqFile = Paths.get(root + "\\" + path);
 
 		/*
-		 * If the file wasn't found, it will search in the target-directory for the file
-		 * by the raw-name without extension.
+		 * If the file wasn't found, it will search in the target-directory for
+		 * the file by the raw-name without extension.
 		 */
-		if (options.isFallBackSearching() && !Files.exists(reqFile) && !Files.isDirectory(reqFile)) {
+		if (options.isFallBackSearching() && !Files.exists(reqFile)
+				&& !Files.isDirectory(reqFile)) {
 			String name = reqFile.getFileName().toString();
 
 			try {
@@ -89,7 +85,8 @@ public class FTPFileProvider extends FileProvider {
 				// Check if reading is allowed
 				if (Files.isReadable(parent)) {
 
-					Optional<Path> founded = Files.walk(parent).filter(sub -> getBaseName(sub).equals(name))
+					Optional<Path> founded = Files.walk(parent)
+							.filter(sub -> getBaseName(sub).equals(name))
 							.findFirst();
 
 					if (founded.isPresent())
@@ -141,10 +138,16 @@ public class FTPFileProvider extends FileProvider {
 
 			// Apply header
 			if (options.isLastModified())
-				res.setHeader("Last-Modified", Utils.getGMTDate(new Date(Files.getLastModifiedTime(file).toMillis())));
+				res.setHeader(
+						"Last-Modified",
+						Utils.getGMTDate(new Date(Files.getLastModifiedTime(
+								file).toMillis())));
 		} catch (IOException e) {
 			res.sendStatus(Status._500);
-			this.logger.log(Level.WARNING, "Cannot read LastModifiedTime from file " + file.toString(), e);
+			this.logger
+					.log(Level.WARNING,
+							"Cannot read LastModifiedTime from file "
+									+ file.toString(), e);
 			return;
 		}
 
@@ -159,8 +162,9 @@ public class FTPFileProvider extends FileProvider {
 	}
 
 	/**
-	 * Returns the logger which is concered for this FileProvilder object. There is
-	 * no default-handler active, if you want to log it you need to set an handler.
+	 * Returns the logger which is concered for this FileProvilder object. There
+	 * is no default-handler active, if you want to log it you need to set an
+	 * handler.
 	 *
 	 * @return The logger from this FileProvilder object.
 	 */

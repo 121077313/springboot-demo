@@ -1,5 +1,8 @@
 package express.filter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 
@@ -18,6 +21,12 @@ import express.http.Response;
 public class HandlerLayers {
 
 	public final HandlerLayer[] layers;
+	
+	public final List<DefaultHandler> middlewares = Collections.synchronizedList(new ArrayList<>());
+	
+	public final List<DefaultHandler> handlers = Collections.synchronizedList(new ArrayList<>());
+	
+	
 
 	public HandlerLayers(int layers) {
 
@@ -35,7 +44,7 @@ public class HandlerLayers {
 		// First fire all middleware's, then the normal request filter
 
 		for (HandlerLayer chain : layers) {
-//			chain.filter(request, response);
+			// chain.filter(request, response);
 
 			if (response.isClosed()) {
 				return;
@@ -55,16 +64,17 @@ public class HandlerLayers {
 
 			HandlerLayer middlewares = layers[0];
 
-			ListIterator<DefaultHandler> iter = middlewares.filters.listIterator();
+			ListIterator<DefaultHandler> iter = middlewares.filters
+					.listIterator();
 
 			while (!res.isClosed() && iter.hasNext()) {
-//				(((DefaultHandler) iter.next())).invoke(req, res);
-				
+				// (((DefaultHandler) iter.next())).invoke(req, res);
+
 				iter.next().invoke(req, res);
 			}
 
 			HandlerLayer handers = layers[1];
-//		handers.filter(req, res);
+			// handers.filter(req, res);
 
 			ListIterator<DefaultHandler> iter2 = handers.filters.listIterator();
 
@@ -73,7 +83,7 @@ public class HandlerLayers {
 			}
 
 			while (!res.isClosed() && iter.hasPrevious()) {
-				((Middleware) ((DefaultHandler) iter.previous()).handler).after(req, res);
+				((Middleware) iter.previous().handler).after(req, res);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -83,15 +93,19 @@ public class HandlerLayers {
 	/**
 	 * Add an new handler for an specific handler layers.
 	 *
-	 * @param level   The layers.
-	 * @param handler The handler, will be append to the top of the layers.
+	 * @param level
+	 *            The layers.
+	 * @param handler
+	 *            The handler, will be append to the top of the layers.
 	 */
 	public void add(int level, DefaultHandler handler) {
 
-		if (level >= layers.length)
-			throw new IndexOutOfBoundsException("Out of bounds: " + level + " > " + layers.length);
-		if (level < 0)
-			throw new IndexOutOfBoundsException("Cannot be under zero: " + level + " < 0");
+		
+		if(level==0){
+			middlewares.add(handler);
+		}else if(level==1){
+			handlers.add(handler);
+		}
 
 		layers[level].filters.add(handler);
 	}
@@ -99,16 +113,17 @@ public class HandlerLayers {
 	/**
 	 * Merge two FilterLayerHandler
 	 *
-	 * @param filterLayerHandler The FilterLayerHandler which you want to merge with
-	 *                           this
+	 * @param filterLayerHandler
+	 *            The FilterLayerHandler which you want to merge with this
 	 */
 	public void combine(HandlerLayers filterLayerHandler) {
 		if (filterLayerHandler != null) {
 			HandlerLayer[] chains = filterLayerHandler.layers;
 
 			if (chains.length != layers.length)
-				throw new RuntimeException("Cannot add an filterLayerHandler with different layers sizes: "
-						+ chains.length + " != " + layers.length);
+				throw new RuntimeException(
+						"Cannot add an filterLayerHandler with different layers sizes: "
+								+ chains.length + " != " + layers.length);
 
 			for (int i = 0; i < chains.length; i++)
 				layers[i].filters.addAll(chains[i].filters);
@@ -118,7 +133,8 @@ public class HandlerLayers {
 	/**
 	 * Iterate over the different FilterLayer
 	 *
-	 * @param layerConsumer An consumer for the layers
+	 * @param layerConsumer
+	 *            An consumer for the layers
 	 */
 	public void forEach(Consumer<HandlerLayer> layerConsumer) {
 		if (layerConsumer == null)

@@ -17,7 +17,7 @@ import express.http.Response;
  */
 public class DefaultHandler {
 
-	public final HttpRequestHandler handler;
+	public final Object handler;
 	private final String req;
 	private final String context;
 	private final boolean reqAll;
@@ -26,7 +26,7 @@ public class DefaultHandler {
 	private String root;
 	private String fullContext;
 
-	public DefaultHandler(String requestMethod, String context, HttpRequestHandler handler) {
+	public DefaultHandler(String requestMethod, String context, Object handler) {
 		this.req = requestMethod;
 		this.handler = handler;
 		this.context = normalizePath(context);
@@ -38,6 +38,8 @@ public class DefaultHandler {
 		this.root = "/";
 		this.fullContext = this.context;
 	}
+	
+	
 
 	public void setRoot(String root) {
 		if (root == null || root.isEmpty())
@@ -68,12 +70,12 @@ public class DefaultHandler {
 				return;
 			}
 
-			handler.handle(req, res);
+			((HttpRequestHandler) handler).handle(req, res);
 			return;
 		}
 
 		// Parse params
-		HashMap<String, String> params = matchURL2(fullContext, requestPath);
+		HashMap<String, String> params = matchURL(fullContext, requestPath);
 		if (params == null)
 			return;
 
@@ -101,7 +103,7 @@ public class DefaultHandler {
 			((Middleware) handler).before(req, res);
 			return;
 		}
-		handler.handle(req, res);
+		((HttpRequestHandler) handler).handle(req, res);
 	}
 	
 	
@@ -114,7 +116,7 @@ public class DefaultHandler {
 			return params;
 		}
 		
-		if (url.startsWith(filter)) {
+		if (!"/".equals(filter)&&url.startsWith(filter)) {
 			return params;
 		}
 		

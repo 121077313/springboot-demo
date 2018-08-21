@@ -91,10 +91,7 @@ public class MyRouter {
 				})
 
 //				.use(Middleware.cookieSession("f3v4", 9000))
-				.use(new CookieSession("f3v4", 9000))// 使用coki中间件
-
-				.use("/static", new FTPFileProvider("F:\\test", new FileProviderOptions()))
-
+				
 				.get("/session", (req, res) -> {
 
 					/*

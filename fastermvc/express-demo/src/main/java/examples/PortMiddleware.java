@@ -13,7 +13,7 @@ public class PortMiddleware extends Middleware   {
 	 * @param res - The response object
 	 */
 	@Override
-	public boolean before(Request req, Response res) {
+	public void before(Request req, Response res) {
 
 		// Get the port
 		int port = req.getURI().getPort();
@@ -29,7 +29,6 @@ public class PortMiddleware extends Middleware   {
 		 * app.getMiddlewareContent("PortParser");
 		 */
 
-		return true;
 	}
 
 	/**

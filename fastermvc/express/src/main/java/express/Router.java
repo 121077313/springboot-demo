@@ -1,5 +1,6 @@
 package express;
 
+import express.filter.HandlerLayers;
 import express.filter.HttpRequestHandler;
 import express.http.Middleware;
 
@@ -119,4 +120,6 @@ public interface Router {
    */
   Router patch(String context, HttpRequestHandler request);
 
+  
+  HandlerLayers getHandler();
 }

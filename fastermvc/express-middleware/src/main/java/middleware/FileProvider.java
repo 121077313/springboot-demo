@@ -78,7 +78,7 @@ public  class FileProvider extends Middleware {
 	}
 
 	@Override
-	public boolean before(Request req, Response res) {
+	public void before(Request req, Response res) {
 		String path = req.getURI().getPath();
 
 		// Check context
@@ -134,10 +134,10 @@ public  class FileProvider extends Middleware {
 				switch (options.getDotFiles()) {
 				case IGNORE:
 					res.setStatus(Status._404);
-					return false;
+					return ;
 				case DENY:
 					res.setStatus(Status._403);
-					return false;
+					return ;
 				}
 			}
 
@@ -145,7 +145,7 @@ public  class FileProvider extends Middleware {
 				String reqEx = Utils.getExtension(reqFile);
 
 				if (reqEx == null)
-					return false;
+					return ;
 
 				for (String ex : options.getExtensions()) {
 					if (reqEx.equals(ex)) {
@@ -159,7 +159,7 @@ public  class FileProvider extends Middleware {
 				finish(reqFile, req, res);
 			}
 		}
-		return false;
+		return ;
 	}
 
 	private void finish(Path file, Request req, Response res) {

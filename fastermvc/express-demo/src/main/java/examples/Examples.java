@@ -104,9 +104,9 @@ public class Examples {
 
 					// Send an info message
 					res.send("You take use of your session cookie " + count + " times.");
-				})
+				});
 
-				.listen(8080, () -> System.out.println("Express is listening!"));
+				app.listen(8080, () -> System.out.println("Express is listening!"));
 	}
 
 }
